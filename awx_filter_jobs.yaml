@@ -1,0 +1,37 @@
+---
+- name: List AWX Jobs
+  hosts: localhost
+  gather_facts: false
+  #vars: 
+  #  launched_by_user: "admin"
+  #  job_status: successful
+
+  tasks:
+    - name: Get AWX Job List
+      awx.awx.job_list:
+        controller_host: "tower.bcnconsulting.com"
+        controller_username: "admin"
+        controller_password: "redhat00"
+        validate_certs: false
+        status: "{{ job_status }}"
+        all_pages: true
+        # query: {"created_by": {"username": "admin"}}
+        query:
+         created_by__username: "{{ launched_by_user }}"
+         launch_type: "manual"
+      register: __awx_jobs
+      
+    - name: List Jobs
+      debug:
+        msg: 
+          # - "{{ __awx_jobs.results }}"
+          # - "{{ __awx_jobs.results | map(attribute='playbook') | list }}"
+          - "{{ awx_jobs.results | map(attribute='summary_fields.job_template.name') | list }}"
+          - "{{ awx_jobs.results | map(attribute='summary_fields.project.name') | list }}"
+         
+    - name: Save Job Information to CSV
+      lineinfile:
+        path: "awx_jobs_output.csv"
+        line: "{{ item.id }},{{ item.status }},{{ item.summary_fields.job_template.name }},{{ item.summary_fields.project.name }}"
+        create: yes
+      loop: "{{ __awx_jobs.results }}"

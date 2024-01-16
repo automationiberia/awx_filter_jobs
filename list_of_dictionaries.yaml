@@ -1,0 +1,31 @@
+---
+- name: Display Usernames from List of Dictionaries
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Define List of Dictionaries
+      set_fact:
+        jobs:
+          - id: 1
+            name: "Job 1"
+            status: "success"
+            started: "2023-11-15T11:51:29.948675Z"
+            finished: "2023-11-15T11:51:33.938018Z"
+            playbook: "playbook1.yaml"
+            created_by:
+              username: "admin"
+
+          - id: 2
+            name: "Job 2"
+            status: "success"
+            started: "2024-01-15T08:35:35.780295Z"
+            finished: "2024-01-15T08:35:39.098644Z"
+            playbook: "playbook2.yaml"
+            created_by:
+              username: "admin"
+
+    - name: Display Usernames from List of Dictionaries
+      debug:
+        msg: "{{ jobs | map(attribute='created_by.username') | list }}"
+
